@@ -10,8 +10,8 @@ _Updated manually (not automated). Educational only; not investment advice._
 ## Current decisions
 | Date       | Ticker | Decision          | TRP-1 score | Link |
 |------------|--------|-------------------|-------------|------|
-| 2025-09-16 | CRWD   | Watch (no position) | **7 / 10**  | [Memo](../memos/CRWD_2025-09-16.md) |
-| 2025-09-16 | HD     | Watch (no position) | **6 / 10**  | [Memo](../memos/HD_2025-09-16.md) |
+| 2025-09-16 | CRWD   | Watch (no position) | **7 / 10**  | [Memo](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CRWD_2025-09-16.md) |
+| 2025-09-16 | HD     | Watch (no position) | **6 / 10**  | [Memo](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)|
 
 ## Event study snapshots (T-1..T+3 vs SPY)
 *(Copied from the evaluator; fill T+1..T+3 after those days pass.)*
