@@ -4,6 +4,8 @@ _Educational only; not investment advice._
 - **Latest memo:** [CRWD](../memos/)  
 - **All memos:** see the `/memos` folder in this repo  
 - **Method:** [METHOD.md](../METHOD.md)
+- - **Performance:** [performance report](../studies/performance.md)
+
 
 ### What this project does
 - Scores stocks with a transparent 10-point checklist (TRP-1)
