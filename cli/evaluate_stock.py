@@ -1,140 +1,223 @@
-# Educational only; not investment advice.
-# Minimal evaluator + event-study using yfinance.
-import sys, os, datetime as dt
-import numpy as np, pandas as pd
+#!/usr/bin/env python3
+"""
+evaluate_stock.py  —  tiny helper for Memo Maker
+
+Usage (from the repo root):
+  python cli/evaluate_stock.py TICKER [EVENT_YYYY-MM-DD]
+
+What it prints:
+  1) SNAPSHOT  — price-based quick stats you can paste into your memo.
+  2) (Optional) EVENT STUDY table T-1..T+3 vs SPY if you pass an event date.
+
+Notes:
+  • Educational use only; not investment advice.
+  • Requires: yfinance, pandas, numpy  (pip install -r requirements.txt)
+"""
+
+from __future__ import annotations
+import sys, math
+from datetime import date, datetime, timedelta
+from typing import Optional, Tuple
+
+import numpy as np
+import pandas as pd
+import yfinance as yf
 
 
-try:
-    import yfinance as yf
+# ---------- helpers ----------
 
-def pick_price(df):
-    """Return a price series from common yfinance column names."""
-    for c in ("Adj Close", "Close", "adjclose", "close"):
-        if c in df.columns:
-            return df[c].astype(float)
-    raise KeyError(f"No price column found. Columns: {list(df.columns)}")
+def _as_date(s: str) -> date:
+    """Parse YYYY-MM-DD -> date."""
+    return datetime.strptime(s, "%Y-%m-%d").date()
 
-except Exception:
-    raise SystemExit("Install yfinance: pip install yfinance")
+def _select_price_series(df: pd.DataFrame) -> pd.Series:
+    """
+    Return a clean price Series from a yfinance download DataFrame.
+    Handles:
+      - auto_adjust True/False
+      - single-level vs MultiIndex columns
+      - 'Adj Close' fallback to 'Close'
+    """
+    if df is None or df.empty:
+        raise ValueError("No price data returned.")
 
-def ttm_sum(df: pd.DataFrame, key: str) -> float | None:
-    if df is None or df.empty or key not in df.index: return None
-    vals = df.loc[key].dropna().astype(float)
-    if vals.empty: return None
-    # prefer last 4 quarterly points if available
-    return float(vals.iloc[:4].sum()) if len(vals) >= 4 else float(vals.iloc[0])
+    cols = df.columns
+    # Choose which top-level field to use
+    top = None
+    if isinstance(cols, pd.MultiIndex):
+        lvl0 = list(cols.get_level_values(0).unique())
+        if "Adj Close" in lvl0:
+            top = "Adj Close"
+        elif "Close" in lvl0:
+            top = "Close"
+        else:
+            top = lvl0[0]
+        s = df[top]
+        # If it's still a DataFrame (ticker level present), take the first column
+        if isinstance(s, pd.DataFrame):
+            s = s.iloc[:, 0]
+        s.name = "Close"
+        return s.dropna()
+    else:
+        if "Adj Close" in cols:
+            s = df["Adj Close"].dropna()
+        elif "Close" in cols:
+            s = df["Close"].dropna()
+        else:
+            # take the first numeric column as a last resort
+            first = [c for c in cols if pd.api.types.is_numeric_dtype(df[c])]
+            if not first:
+                raise KeyError("No numeric price column found.")
+            s = df[first[0]].dropna()
+        s.name = "Close"
+        return s
 
-def fetch_financials(t: yf.Ticker):
-    pick = lambda q, a: q if (q is not None and not q.empty) else (a if a is not None else pd.DataFrame())
-    return (
-        pick(getattr(t, "quarterly_income_stmt", None), getattr(t, "income_stmt", None)),
-        pick(getattr(t, "quarterly_cashflow", None),     getattr(t, "cashflow", None)),
-        pick(getattr(t, "quarterly_balance_sheet", None),getattr(t, "balance_sheet", None))
-    )
+def _get_prices(ticker: str, start: date, end: date) -> pd.Series:
+    """Download a price series for ticker (close/adj-close) with robust column handling."""
+    # Turn off auto_adjust so our math stays consistent even if yfinance defaults change.
+    df = yf.download(ticker, start=start, end=end, auto_adjust=False, progress=False)
+    return _select_price_series(df)
 
-def metrics(ticker: str, months_for_mom: int = 6) -> dict:
-    t = yf.Ticker(ticker)
-    fast = getattr(t, "fast_info", {}) or {}
-    price, mcap = fast.get("last_price"), fast.get("market_cap")
-    IS, CF, BS = fetch_financials(t)
+def _format_pct(x: float) -> str:
+    if pd.isna(x) or not np.isfinite(x):
+        return "—"
+    return f"{x*100:,.1f}%"
 
-    rev_ttm   = ttm_sum(IS, "Total Revenue")
-    gross_ttm = ttm_sum(IS, "Gross Profit")
-    op_ttm    = ttm_sum(IS, "Operating Income")
+def _format_money(x: float) -> str:
+    if pd.isna(x) or not np.isfinite(x):
+        return "—"
+    # show billions if large
+    absx = abs(x)
+    if absx >= 1e9:
+        return f"${x/1e9:,.1f}B"
+    if absx >= 1e6:
+        return f"${x/1e6:,.1f}M"
+    return f"${x:,.2f}"
 
-    fcf_ttm = None
-    if CF is not None and not CF.empty:
-        ocf   = ttm_sum(CF, "Operating Cash Flow")
-        capex = ttm_sum(CF, "Capital Expenditure")
-        if ocf is not None and capex is not None: fcf_ttm = float(ocf - abs(capex))
+# ---------- snapshot (price-based) ----------
 
-    def r(a,b): return None if (a is None or b in (None,0)) else float(a)/float(b)
-    gross_margin = r(gross_ttm, rev_ttm)
-    op_margin    = r(op_ttm, rev_ttm)
-    fcf_margin   = r(fcf_ttm, rev_ttm)
-    ps_ratio     = r(mcap, rev_ttm)
+def snapshot_from_prices(px: pd.Series) -> dict:
+    """
+    Compute simple, price-only snapshot numbers that are stable:
+      - Price (last close)
+      - 3M momentum (~63 trading days)
+      - 12M momentum (~252 trading days)
+      - 52-week drawdown (vs trailing 252d peak)
+    """
+    if len(px) < 40:
+        raise ValueError("Not enough price history for snapshot.")
 
-    net_cash = None
-    if BS is not None and not BS.empty:
-        cash = BS.loc["Cash And Cash Equivalents", :].dropna().astype(float) if "Cash And Cash Equivalents" in BS.index else pd.Series(dtype=float)
-        debt = BS.loc["Total Debt", :].dropna().astype(float) if "Total Debt" in BS.index else pd.Series(dtype=float)
-        if not cash.empty: net_cash = float(cash.iloc[0]) - (float(debt.iloc[0]) if not debt.empty else 0.0)
+    last = float(px.iloc[-1])
+    # momentum windows (trading days)
+    def ret_over(n: int) -> float:
+        if len(px) <= n:
+            return np.nan
+        return (px.iloc[-1] / px.iloc[-1 - n]) - 1.0
 
-    end = dt.date.today(); start = end - dt.timedelta(days=365)
-    px  = yf.download(ticker, start=start, end=end, progress=False)["Adj Close"].dropna()
-    mom = float(px.iloc[-1] / px.iloc[max(0,len(px)-int(21*months_for_mom))] - 1) if len(px)>0 else None
-    dd  = float(px.iloc[-1]/float(px.max()) - 1) if len(px)>0 else None
+    mom_3m = ret_over(63)
+    mom_12m = ret_over(252)
 
-    return {"price":price,"market_cap":mcap,"rev_ttm":rev_ttm,
-            "gross_margin":gross_margin,"op_margin":op_margin,"fcf_margin":fcf_margin,
-            "ps_ratio":ps_ratio,"net_cash":net_cash,"mom_6m":mom,"dd_from_52w_high":dd}
+    trail = px.tail(252) if len(px) >= 252 else px
+    dd = (last / float(trail.max())) - 1.0
 
-def event_study(ticker: str, event_date: str, pre=1, post=3) -> pd.DataFrame:
-    ed = pd.to_datetime(event_date)
-    start = (ed - pd.tseries.offsets.BDay(pre + 5)).date()
-    end   = (ed + pd.tseries.offsets.BDay(post + 5)).date()
-    px = yf.download(ticker, start=start, end=end, progress=False)["Adj Close"].rename("stock").to_frame()
-    spy = yf.download("SPY",   start=start, end=end, progress=False)["Adj Close"].rename("spy").to_frame()
-    df = px.join(spy, how="inner").pct_change().dropna()
-    df["abnormal"] = df["stock"] - df["spy"]
-    idx = df.index; t0 = next((i for i,d in enumerate(idx) if d >= ed), len(idx)-1)
-    lo, hi = max(0,t0-pre), min(len(idx)-1, t0+post)
-    win = df.iloc[lo:hi+1].copy(); win["day"] = range(-pre, -pre + len(win)); win["cum_abnormal"] = win["abnormal"].cumsum()
-    return win[["day","stock","spy","abnormal","cum_abnormal"]]
+    return {
+        "price": last,
+        "mom_3m": mom_3m,
+        "mom_12m": mom_12m,
+        "drawdown_52w": dd,
+    }
 
-def scorecard(m: dict) -> tuple[int,list[str]]:
-    pts, notes = 0, []
-    def chk(cond, text, w=2): 
-        nonlocal pts; (pts:=pts+w) if cond else None; notes.append(("✓ " if cond else "✗ ")+text)
-    chk(m.get("gross_margin",0) is not None and m["gross_margin"] >= 0.40, "Gross margin ≥ 40%")
-    chk(m.get("op_margin",0)    is not None and m["op_margin"]    >= 0.10, "Operating margin ≥ 10%")
-    chk(m.get("fcf_margin",0)   is not None and m["fcf_margin"]   >= 0.05, "FCF margin ≥ 5%")
-    chk(m.get("mom_6m",0)       is not None and m["mom_6m"]        > 0,    "6-month momentum > 0")
-    chk(m.get("dd_from_52w_high") is not None and m["dd_from_52w_high"] > -0.25, "Drawdown < 25%")
-    chk(m.get("ps_ratio")       is not None and m["ps_ratio"]     <= 15,   "Price/Sales ≤ 15×")
-    return pts, notes
+def print_snapshot(ticker: str, px: pd.Series) -> None:
+    s = snapshot_from_prices(px)
+    print("\nSNAPSHOT")
+    print("--------")
+    print(f"Ticker: {ticker}")
+    print(f"Price:   {_format_money(s['price'])}")
+    print(f"3M mom:  {_format_pct(s['mom_3m'])}")
+    print(f"12M mom: {_format_pct(s['mom_12m'])}")
+    print(f"52w DD:  {_format_pct(s['drawdown_52w'])}")
 
-def as_md(ticker: str, m: dict, pts: int, notes: list[str], evt: pd.DataFrame|None, event_date: str|None):
-    today = dt.date.today().isoformat()
-    def fmt(x,pct=False): 
-        if x is None: return "n/a"
-        return f"{x*100:,.1f}%" if pct else f"{x:,.2f}" if isinstance(x,(int,float)) else str(x)
-    md = [f"# {ticker} — Evaluation ({today})",
-          "_Educational only; not investment advice._","",
-          "## Snapshot",
-          f"- Price: {fmt(m.get('price'))}",
-          f"- Market cap: {fmt(m.get('market_cap'))}",
-          f"- TTM revenue: {fmt(m.get('rev_ttm'))}",
-          f"- Gross margin: {fmt(m.get('gross_margin'),True)}",
-          f"- Operating margin: {fmt(m.get('op_margin'),True)}",
-          f"- FCF margin: {fmt(m.get('fcf_margin'),True)}",
-          f"- Price/Sales: {fmt(m.get('ps_ratio'))}",
-          f"- Net cash (cash–debt): {fmt(m.get('net_cash'))}",
-          f"- 6M momentum: {fmt(m.get('mom_6m'),True)}",
-          f"- Drawdown from 52w high: {fmt(m.get('dd_from_52w_high'),True)}","",
-          "## Scorecard (10 pts max)"]
-    md += [f"- {n}" for n in notes]
-    md += [f"", f"**Score:** {pts}/10 → Green (8–10) / Yellow (5–7) / Red (0–4)", ""]
-    if evt is not None and not evt.empty:
-        md += ["## Event study (abnormal vs. SPY)",
-               "| Day | Stock r | SPY r | Abnormal | Cum Abnormal |",
-               "|---:|---:|---:|---:|---:|"]
-        for _,r in evt.iterrows():
-            md.append(f"| {int(r['day'])} | {r['stock']*100:,.2f}% | {r['spy']*100:,.2f}% | {r['abnormal']*100:,.2f}% | {r['cum_abnormal']*100:,.2f}% |")
-        md += [f"", f"_Window: T−1..T+3 around {event_date}_", ""]
-    md += ["## Notes & sources","- Company 10-K/10-Q, earnings release, investor deck"]
-    return "\n".join(md)
+# ---------- event study ----------
 
-def main():
+def nearest_index_idx(dts: pd.DatetimeIndex, d: date) -> int:
+    """Return the position of the trading day nearest to d."""
+    ts = pd.to_datetime(d)
+    pos = dts.get_indexer([ts], method="nearest")[0]
+    return int(pos)
+
+def event_study(px: pd.Series, spy: pd.Series, event_day: date) -> pd.DataFrame:
+    """
+    Build a small event-study table with daily returns (T-1..T+3)
+    and abnormal = ticker_ret - spy_ret.
+    """
+    # Align and compute daily returns
+    df = pd.DataFrame({
+        "px": px,
+        "spy": spy.reindex(px.index).ffill()
+    }).dropna()
+    rets = df.pct_change()
+
+    # Find nearest trading day to event_day
+    i0 = nearest_index_idx(df.index, event_day)
+
+    # we want rows: T-1, T0, T+1, T+2, T+3
+    rows = []
+    labels = ["T-1","T0","T+1","T+2","T+3"]
+    offsets = [-1, 0, 1, 2, 3]
+
+    for lab, off in zip(labels, offsets):
+        idx = i0 + off
+        if 0 <= idx < len(rets):
+            r_px = float(rets.iloc[idx]["px"])
+            r_spy = float(rets.iloc[idx]["spy"])
+            rows.append([lab, r_px, r_spy, r_px - r_spy])
+        else:
+            rows.append([lab, np.nan, np.nan, np.nan])
+
+    out = pd.DataFrame(rows, columns=["Day", "Stock", "SPY", "Abnormal"])
+    return out
+
+def print_event_table(df: pd.DataFrame, ticker: str, event_day: date) -> None:
+    print(f"\nEVENT STUDY — {ticker} vs SPY  (around {event_day.isoformat()})")
+    print("-----------------------------------------------------------")
+    print("| Day |  Stock  |   SPY   | Abnormal |")
+    print("|----:|--------:|--------:|---------:|")
+    for _, r in df.iterrows():
+        stock = "—" if pd.isna(r["Stock"]) else f"{r['Stock']*100:,.2f}%"
+        spy   = "—" if pd.isna(r["SPY"])   else f"{r['SPY']*100:,.2f}%"
+        abn   = "—" if pd.isna(r["Abnormal"]) else f"{r['Abnormal']*100:,.2f}%"
+        print(f"| {r['Day']:>3} | {stock:>7} | {spy:>7} | {abn:>8} |")
+
+# ---------- main ----------
+
+def main() -> None:
     if len(sys.argv) < 2:
-        print("Usage: python cli/evaluate_stock.py TICKER [EVENT_YYYY-MM-DD]"); raise SystemExit(1)
-    ticker = sys.argv[1].upper(); event_date = sys.argv[2] if len(sys.argv) >= 3 else None
-    m = metrics(ticker); pts, notes = scorecard(m)
-    evt = event_study(ticker, event_date) if event_date else None
-    os.makedirs("memos", exist_ok=True)
-    fname = f"memos/{ticker}_{dt.datetime.now().strftime('%Y-%m-%d_%H%M')}.md"
-    with open(fname, "w", encoding="utf-8") as f: f.write(as_md(ticker, m, pts, notes, evt, event_date))
-    print(f"Saved {fname}")
+        print("Usage: python cli/evaluate_stock.py TICKER [EVENT_YYYY-MM-DD]")
+        sys.exit(2)
 
-if __name__ == "__main__": main()
+    ticker = sys.argv[1].upper()
+    event_day: Optional[date] = None
+    if len(sys.argv) >= 3:
+        event_day = _as_date(sys.argv[2])
 
+    # Pull enough history for snapshot and (optional) event window.
+    today = date.today()
+    start_for_snapshot = today - timedelta(days=600)   # ~2y of trading days is plenty
+    end = today + timedelta(days=1)                    # include today
+
+    # Download prices (robust to Adj Close vs Close)
+    px  = _get_prices(ticker, start_for_snapshot, end)
+    spy = _get_prices("SPY",   start_for_snapshot, end)
+
+    # 1) Snapshot
+    print_snapshot(ticker, px)
+
+    # 2) Event study (optional)
+    if event_day is not None:
+        # sanity: fetch a little extra before/after event
+        # (we already have ample history in px/spy)
+        tbl = event_study(px, spy, event_day)
+        print_event_table(tbl, ticker, event_day)
+
+if __name__ == "__main__":
+    main()
