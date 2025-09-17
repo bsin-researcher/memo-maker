@@ -3,6 +3,10 @@
 import sys, os, datetime as dt
 import numpy as np, pandas as pd
 
+
+try:
+    import yfinance as yf
+
 def pick_price(df):
     """Return a price series from common yfinance column names."""
     for c in ("Adj Close", "Close", "adjclose", "close"):
@@ -10,9 +14,6 @@ def pick_price(df):
             return df[c].astype(float)
     raise KeyError(f"No price column found. Columns: {list(df.columns)}")
 
-
-try:
-    import yfinance as yf
 except Exception:
     raise SystemExit("Install yfinance: pip install yfinance")
 
