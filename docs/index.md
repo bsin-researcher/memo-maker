@@ -4,7 +4,7 @@ _Educational only; not investment advice._
 
 - **Latest memo:** [HD](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
 - **All memos:** [memos/](https://github.com/bsin-researcher/memo-maker/tree/main/memos)
-- **Method:** [METHOD.md](https://github.com/bsin-researcher/memo-maker/blob/main/METHOD.md)
+- **Method:** **Method:** [METHOD.md](https://github.com/bsin-researcher/memo-maker/blob/main/METHOD.md)
 - **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
 
 
