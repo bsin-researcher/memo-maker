@@ -1,9 +1,22 @@
 # memo-maker
 
-[![Site](https://img.shields.io/badge/site-live-brightgreen)](https://bsin-researcher.github.io/memo-maker/)
+Open-source student equity-research toolkit (educational only).
 
-**What it is:** Transparent, reproducible equity-research kit (student project).  
-**Outputs:** 1-page memos + T−1..T+3 event study _(educational only)_.
+- Generates 1-page memos and an optional T-1..T+3 event study
+- Transparent, reproducible scoring with a 10-point checklist (TRP-1)
+- Python CLI + simple Markdown outputs
+
+**Website (GitHub Pages):** https://bsin-researcher.github.io/memo-maker/
+
+## Links
+
+- **All memos:** [memos/](memos/)
+- **Latest example memos:** [HD_2025-09-16](memos/HD_2025-09-16.md) · [CRWD_2025-09-16](memos/CRWD_2025-09-16.md)
+- **Method:** [METHOD](docs/METHOD.md)
+- **Performance log:** [performance report](studies/performance.md)
+- **Public trades CSV:** [trades/trades.csv](trades/trades.csv)
+
+---
 
 ## Quickstart
 
@@ -22,4 +35,3 @@ pip install -r requirements.txt
 # 3) Run example evaluations (paste outputs into /memos/*.md)
 python cli/evaluate_stock.py CRWD 2025-09-16
 python cli/evaluate_stock.py HD   2025-09-16
-
