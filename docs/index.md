@@ -2,10 +2,11 @@
 
 _Educational only; not investment advice._
 
-- **Latest memo:** [HD](../memos/HD_2025-09-16.md)
-- **All memos:** check the `/memos` folder in this repo
-- **Method:** [METHOD.md](../METHOD.md)
-- **Performance:** [performance report](../studies/performance.md)
+- **Latest memo:** [HD](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
+- **All memos:** [memos/](https://github.com/bsin-researcher/memo-maker/tree/main/memos)
+- **Method:** [METHOD.md](https://github.com/bsin-researcher/memo-maker/blob/main/METHOD.md)
+- **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
+
 
 ## What this project does
 - Scores stocks with a transparent 10-point checklist (TRP-1).
