@@ -22,8 +22,8 @@ No installs needed. Copy `memos/_TEMPLATE.md`, create `memos/TICKER_YYYY-MM-DD.m
 - **Method:** [METHOD](docs/METHOD.md)
 - **Performance log:** [performance report](studies/performance.md)
 - **Public trades CSV:** [trades/trades.csv](trades/trades.csv)
+- **Submit a memo:** https://github.com/bsin-researcher/memo-maker/issues/new?template=memo-submission.yml
 
----
 
 ## Quickstart
 
