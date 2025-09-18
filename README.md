@@ -2,6 +2,9 @@
 
 Open-source student equity-research toolkit (educational only).
 
+![CI](https://github.com/bsin-researcher/memo-maker/actions/workflows/ci.yml/badge.svg)
+
+
 - Generates 1-page memos and an optional T-1..T+3 event study
 - Transparent, reproducible scoring with a 10-point checklist (TRP-1)
 - Python CLI + simple Markdown outputs
