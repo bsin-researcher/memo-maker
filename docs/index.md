@@ -7,7 +7,8 @@ _Educational only; not investment advice._
 - **Method:** [METHOD](https://bsin-researcher.github.io/memo-maker/METHOD.html)
 - **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
 - **Memo Challenge:** [how to contribute](./challenge.md)
-- [![Open in Streamlit](https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/)
+- **Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
+
 
 
 
