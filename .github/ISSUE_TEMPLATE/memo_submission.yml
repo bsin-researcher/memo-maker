@@ -1,0 +1,17 @@
+name: Memo submission (no code)
+description: Propose a new memo using a form
+labels: ["memo", "help wanted"]
+body:
+  - type: input
+    id: ticker
+    attributes: { label: Ticker, placeholder: e.g., AAPL }
+    validations: { required: true }
+  - type: input
+    id: date
+    attributes: { label: Memo date (YYYY-MM-DD), placeholder: 2025-09-16 }
+    validations: { required: true }
+  - type: textarea
+    id: memo
+    attributes:
+      label: Paste your memo (use headings from _TEMPLATE)
+      description: Include Thesis, Must-be-true (3), Risks, Catalysts, Sources
