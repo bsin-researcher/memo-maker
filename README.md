@@ -22,7 +22,7 @@ No installs needed. Copy `memos/_TEMPLATE.md`, create `memos/TICKER_YYYY-MM-DD.m
 - **Method:** [METHOD](docs/METHOD.md)
 - **Performance log:** [performance report](studies/performance.md)
 - **Public trades CSV:** [trades/trades.csv](trades/trades.csv)
--**Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
+- **Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
 
 
 
