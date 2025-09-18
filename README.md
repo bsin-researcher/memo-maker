@@ -2,6 +2,10 @@
 
 Open-source student equity-research toolkit (educational only).
 
+### Join the Memo Challenge
+No installs needed. Copy `memos/_TEMPLATE.md`, create `memos/TICKER_YYYY-MM-DD.md`, and open a PR — or submit via **Issues → Memo submission**.
+
+
 ![CI](https://github.com/bsin-researcher/memo-maker/actions/workflows/ci.yml/badge.svg)
 
 
