@@ -22,7 +22,7 @@ No installs needed. Copy `memos/_TEMPLATE.md`, create `memos/TICKER_YYYY-MM-DD.m
 - **Method:** [METHOD](docs/METHOD.md)
 - **Performance log:** [performance report](studies/performance.md)
 - **Public trades CSV:** [trades/trades.csv](trades/trades.csv)
-- **Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
+- *Try the app:** [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/)
 - [![Release](https://img.shields.io/github/v/release/bsin-researcher/memo-maker?sort=semver)](https://github.com/bsin-researcher/memo-maker/releases)
 
 
