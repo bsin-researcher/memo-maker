@@ -6,6 +6,8 @@ _Educational only; not investment advice._
 - **All memos:** [memos/](https://github.com/bsin-researcher/memo-maker/tree/main/memos)
 - **Method:** [METHOD](https://bsin-researcher.github.io/memo-maker/METHOD.html)
 - **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
+- **Memo Challenge:** [how to contribute](./challenge.md)
+
 
 
 ## What this project does
