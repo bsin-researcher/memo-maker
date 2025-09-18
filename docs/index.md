@@ -8,6 +8,8 @@ _Educational only; not investment advice._
 - **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
 - **Memo Challenge:** [how to contribute](./challenge.md)
 - **Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
+- [![Release](https://img.shields.io/github/v/release/bsin-researcher/memo-maker?sort=semver)](https://github.com/bsin-researcher/memo-maker/releases)
+
 
 
 
