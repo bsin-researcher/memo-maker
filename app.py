@@ -1,5 +1,6 @@
 # app.py
-# Memo Maker — Snapshot & T-1..T+3 Event Study (Educational only; not investment advice)
+# Memo Maker — Snapshot & T-1..T+3 Event Study
+# Educational only; not investment advice.
 
 import pandas as pd
 import numpy as np
@@ -10,7 +11,8 @@ import streamlit as st
 
 st.set_page_config(page_title="Memo Maker — Snapshot & Event Study", page_icon="📈", layout="centered")
 
-# -------- Data helpers --------
+# ========= Helpers =========
+
 def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.Series:
     """
     Robust loader for a single ticker.
@@ -39,6 +41,7 @@ def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.S
         elif 'Close' in df.columns:
             s = df['Close']
         else:
+            # Fallback: take the last price-like column
             for col in ['Close', 'Adj Close', 'close', 'adjclose']:
                 if col in df.columns:
                     s = df[col]
@@ -50,12 +53,10 @@ def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.S
 def nearest_trading_loc(index: pd.DatetimeIndex, when: pd.Timestamp) -> int:
     """Return positional index of the trading day at/just before `when`."""
     pos = index.get_indexer([when], method='pad')[0]
-    if pos == -1:
-        pos = 0
-    return pos
+    return 0 if pos == -1 else pos
 
 def pct_change_from(series: pd.Series, steps_back: int) -> float | None:
-    """Return percent change from N trading steps back to last point; None if not enough history."""
+    """Percent change from N trading steps back to last point; None if not enough history."""
     if len(series) <= steps_back:
         return None
     now = series.iloc[-1]
@@ -63,18 +64,21 @@ def pct_change_from(series: pd.Series, steps_back: int) -> float | None:
     return float((now / then) - 1.0)
 
 def snapshot_metrics(ticker: str, event_date: datetime) -> dict:
-    start = event_date - timedelta(days=400)   # enough lookback to compute 12M
-    end   = event_date + BDay(4)               # include a bit after for T+1..T+3
+    start = event_date - timedelta(days=400)  # enough lookback to compute 12M
+    end   = event_date + BDay(4)              # include a bit after for T+1..T+3
     px = load_prices(ticker, start, end)
 
+    # Ensure we only compute up to the event date for snapshot stats
     px_upto_event = px.loc[:event_date]
     price = float(px_upto_event.iloc[-1])
 
-    mom_3m  = pct_change_from(px_upto_event, 63)    # ~63 trading days ~ 3 months
-    mom_12m = pct_change_from(px_upto_event, 252)   # ~252 trading days ~ 12 months
+    mom_3m  = pct_change_from(px_upto_event, 63)   # ~63 trading days ~ 3 months
+    mom_12m = pct_change_from(px_upto_event, 252)  # ~252 trading days ~ 12 months
 
+    # Drawdown from 52w high up to event date
     if not px_upto_event.empty:
-        peak_52w = px_upto_event.iloc[-252:].max() if len(px_upto_event) >= 252 else px_upto_event.max()
+        window = px_upto_event.iloc[-252:] if len(px_upto_event) >= 252 else px_upto_event
+        peak_52w = window.max()
         dd_52w = float((price / peak_52w) - 1.0)
     else:
         dd_52w = None
@@ -82,16 +86,20 @@ def snapshot_metrics(ticker: str, event_date: datetime) -> dict:
     return {"price": price, "mom_3m": mom_3m, "mom_12m": mom_12m, "dd_52w": dd_52w, "px": px}
 
 def event_study_table(ticker: str, event_date: datetime) -> pd.DataFrame:
+    # Small window around the event
     start = event_date - BDay(3)
     end   = event_date + BDay(4)
     s_px  = load_prices(ticker, start, end)
     spy   = load_prices("SPY", start, end)
 
+    # Align on index
     df = pd.DataFrame({"stock": s_px}).join(spy.rename("spy"), how="inner")
     rets = df.pct_change().dropna()
 
+    # Event row
     loc = nearest_trading_loc(df.index, pd.Timestamp(event_date))
 
+    # Build rows T-1, T0, T+1..T+3 (skip out-of-bounds gracefully)
     rows = []
     def grab(pos: int, label: str):
         if 0 <= pos < len(rets):
@@ -106,24 +114,26 @@ def event_study_table(ticker: str, event_date: datetime) -> pd.DataFrame:
     grab(loc+2, "T+2")
     grab(loc+3, "T+3")
 
-    out = pd.DataFrame(rows, columns=["Day", "Stock", "SPY", "Abnormal"])
-    return out
+    return pd.DataFrame(rows, columns=["Day", "Stock", "SPY", "Abnormal"])
 
 def fmt_pct(x: float | None) -> str:
     if x is None or pd.isna(x):
         return "—"
     return f"{x*100:.2f}%"
 
-# -------- UI --------
+# ========= UI =========
+
 st.title("Memo Maker — Snapshot & T-1..T+3 Event Study")
 st.caption("Educational only; not investment advice.")
 
-# View counter badge (increments on page view; simple + reliable)
-# If your Streamlit URL is different, replace the URL-encoded value after url=
+# Views badge (auto-increments when the page loads; no keys needed)
 st.markdown(
-    '<img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg'
-    '?url=https%3A%2F%2Fmemo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app'
-    '&title=Runs&count_bg=%23007ACC&title_bg=%23000000&edge_flat=false" />',
+    """
+    <div style="margin:8px 0 18px 0; text-align:center;">
+      <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmemo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app&title=Runs&count_bg=%232196F3&title_bg=%23000000&icon=googleanalytics.svg&edge_flat=false"
+           height="32" alt="App runs" />
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -136,6 +146,7 @@ with col2:
 run = st.button("Run")
 
 if run:
+    # Validate date
     try:
         event_date = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
