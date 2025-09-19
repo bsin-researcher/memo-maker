@@ -1,58 +1,22 @@
-# Memo Maker — Open-Source Equity Research Lab
-_Reproducible 1-page memos with a Snapshot and T-1..T+3 event study (educational only)._
+# Memo Maker — Research Hub
 
-<!-- Hero buttons -->
-<p>
-  <a href="/memo-maker/app"><b>▶︎ Open the App</b></a> ·
-  <a href="https://YOUR_YOUTUBE_DEMO_URL_HERE">Demo (90s)</a> ·
-  <a href="./memos/HD_2025-09-16.md">Latest memo</a>
-</p>
+*Educational only; not investment advice.*
 
-[![Release](https://img.shields.io/github/v/release/bsin-researcher/memo-maker?sort=semver)](https://github.com/bsin-researcher/memo-maker/releases)
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bsin-researcher.github.io/memo-maker/app)
-
----
-
-## What this does
-1. **Generate a Snapshot** — price, 3M/12M momentum, 52-week drawdown.  
-2. **Build an event study** — T-1..T+3 vs SPY with abnormal returns.  
-3. **Export & publish** — CSV download + copy-to-memo template for reproducible analysis.
-
-> **Educational only; not investment advice.**
+- **Latest memos:**  
+  [HD_2025-09-16.md](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md) ·
+  [CRWD_2025-09-16.md](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CRWD_2025-09-16.md)
+- **All memos:** [memos/ (GitHub folder)](https://github.com/bsin-researcher/memo-maker/tree/main/memos)
+- **Method:** [METHOD](./METHOD.html)
+- **Performance:** [performance report (GitHub)](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
+- **Memo Challenge:** [how to contribute](./challenge.html)
+- **Try the app:** https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/
 
 ---
 
-## Project metrics
-_(Update these numbers weekly — they’re for admissions “at-a-glance.”)_
-- Memos published: **8**  
-- Latest release: **v0.3.0**  
-- CI: **Passing**  
-- App features: **Batch analysis · CSV export · T0 leaderboard**
+## What this project does
 
----
+- Scores stocks with a transparent 10-point checklist (TRP-1).
+- *(Optional)* Event study T-1..T+3 vs SPY.
+- Generates 1-page Markdown memos for reproducibility.
 
-## Memo Gallery
-These examples use event dates ≥3 trading days old so T+ rows are filled.
-- [HD — 2025-09-16](./memos/HD_2025-09-16.md)
-- [CRWD — 2025-09-16](./memos/CRWD_2025-09-16.md)
-
-
----
-
-## How to contribute (no installs)
-- **Write a memo:** open the template in `memos/_TEMPLATE.md`, copy it, then submit via our web form.  
-- **Submit:** [New memo via Issue form](https://github.com/bsin-researcher/memo-maker/issues/new/choose)  
-- We’ll review, add Snapshot/T-window if needed, and credit you on the memo.
-
----
-
-## Method & Performance
-- **Method:** how the Snapshot and event study are computed → [METHOD](./METHOD.html)  
-- **Performance:** running notes & results → [Performance log](./studies/performance.md)
-
----
-
-## Links
-- **Repository:** https://github.com/bsin-researcher/memo-maker  
-- **Releases:** https://github.com/bsin-researcher/memo-maker/releases  
-- **Open the App:** [/memo-maker/app](/memo-maker/app)
+This site is open source.
