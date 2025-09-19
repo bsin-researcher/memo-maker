@@ -190,5 +190,12 @@ if run:
             for col in ["Stock", "SPY", "Abnormal"]:
                 tbl[col] = tbl[col].apply(lambda v: "—" if pd.isna(v) else f"{v*100:.2f}%")
             st.table(tbl)
+            # increment global counter only on successful render
+new_total = increment_run_count()
+if new_total is not None:
+    st.caption(f"Global runs recorded: **{new_total}**")
+else:
+    st.caption("Global runs recorded: (network unavailable)")
+
 
 st.caption("Source: yfinance. Educational use only.")
