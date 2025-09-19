@@ -2,21 +2,28 @@
 # Memo Maker — Snapshot & T-1..T+3 Event Study
 # Educational only; not investment advice.
 
-import pandas as pd
+from __future__ import annotations
+
 import numpy as np
+import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import BDay
 import streamlit as st
 
-st.set_page_config(page_title="Memo Maker — Snapshot & Event Study", page_icon="📈", layout="centered")
+st.set_page_config(
+    page_title="Memo Maker — Snapshot & Event Study",
+    page_icon="📈",
+    layout="centered",
+)
 
-# ========= Helpers =========
-
+# -------------------------
+# Data helpers
+# -------------------------
 def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.Series:
     """
-    Robust loader for a single ticker.
-    Works whether yfinance returns 'Adj Close' or 'Close', and with/without MultiIndex.
+    Robust loader for a single ticker from yfinance.
+    Works whether yfinance returns 'Adj Close' or 'Close', with or without MultiIndex.
     """
     df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=False)
     if df.empty:
@@ -29,6 +36,7 @@ def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.S
         elif ('Close', ticker) in df.columns:
             s = df[('Close', ticker)]
         else:
+            # pick the first level named 'Adj Close' or 'Close' if ticker label differs
             if 'Adj Close' in df.columns.get_level_values(0):
                 s = df.xs('Adj Close', level=0, axis=1).iloc[:, 0]
             elif 'Close' in df.columns.get_level_values(0):
@@ -50,10 +58,12 @@ def load_prices(ticker: str, start: str | datetime, end: str | datetime) -> pd.S
                 raise KeyError("Neither 'Adj Close' nor 'Close' found in columns.")
     return s.dropna().astype(float)
 
+
 def nearest_trading_loc(index: pd.DatetimeIndex, when: pd.Timestamp) -> int:
     """Return positional index of the trading day at/just before `when`."""
     pos = index.get_indexer([when], method='pad')[0]
     return 0 if pos == -1 else pos
+
 
 def pct_change_from(series: pd.Series, steps_back: int) -> float | None:
     """Percent change from N trading steps back to last point; None if not enough history."""
@@ -63,30 +73,36 @@ def pct_change_from(series: pd.Series, steps_back: int) -> float | None:
     then = series.iloc[-(steps_back + 1)]
     return float((now / then) - 1.0)
 
+
 def snapshot_metrics(ticker: str, event_date: datetime) -> dict:
     start = event_date - timedelta(days=400)  # enough lookback to compute 12M
-    end   = event_date + BDay(4)              # include a bit after for T+1..T+3
+    end   = event_date + BDay(4)              # include after for T+1..T+3
     px = load_prices(ticker, start, end)
 
-    # Ensure we only compute up to the event date for snapshot stats
     px_upto_event = px.loc[:event_date]
     price = float(px_upto_event.iloc[-1])
 
-    mom_3m  = pct_change_from(px_upto_event, 63)   # ~63 trading days ~ 3 months
-    mom_12m = pct_change_from(px_upto_event, 252)  # ~252 trading days ~ 12 months
+    mom_3m  = pct_change_from(px_upto_event, 63)    # ~3 months
+    mom_12m = pct_change_from(px_upto_event, 252)   # ~12 months
 
-    # Drawdown from 52w high up to event date
     if not px_upto_event.empty:
-        window = px_upto_event.iloc[-252:] if len(px_upto_event) >= 252 else px_upto_event
-        peak_52w = window.max()
+        lookback = px_upto_event.iloc[-252:] if len(px_upto_event) >= 252 else px_upto_event
+        peak_52w = lookback.max()
         dd_52w = float((price / peak_52w) - 1.0)
     else:
         dd_52w = None
 
-    return {"price": price, "mom_3m": mom_3m, "mom_12m": mom_12m, "dd_52w": dd_52w, "px": px}
+    return {
+        "price": price,
+        "mom_3m": mom_3m,
+        "mom_12m": mom_12m,
+        "dd_52w": dd_52w,
+        "px": px,  # full series (for event study)
+    }
+
 
 def event_study_table(ticker: str, event_date: datetime) -> pd.DataFrame:
-    # Small window around the event
+    # Stock + SPY series around event window
     start = event_date - BDay(3)
     end   = event_date + BDay(4)
     s_px  = load_prices(ticker, start, end)
@@ -96,10 +112,10 @@ def event_study_table(ticker: str, event_date: datetime) -> pd.DataFrame:
     df = pd.DataFrame({"stock": s_px}).join(spy.rename("spy"), how="inner")
     rets = df.pct_change().dropna()
 
-    # Event row
+    # Find event loc by nearest trading day <= event_date
     loc = nearest_trading_loc(df.index, pd.Timestamp(event_date))
 
-    # Build rows T-1, T0, T+1..T+3 (skip out-of-bounds gracefully)
+    # Build rows T-1..T+3 (skip if out of bounds)
     rows = []
     def grab(pos: int, label: str):
         if 0 <= pos < len(rets):
@@ -116,22 +132,36 @@ def event_study_table(ticker: str, event_date: datetime) -> pd.DataFrame:
 
     return pd.DataFrame(rows, columns=["Day", "Stock", "SPY", "Abnormal"])
 
+
 def fmt_pct(x: float | None) -> str:
     if x is None or pd.isna(x):
         return "—"
     return f"{x*100:.2f}%"
 
-# ========= UI =========
 
+# -------------------------
+# UI
+# -------------------------
 st.title("Memo Maker — Snapshot & T-1..T+3 Event Study")
 st.caption("Educational only; not investment advice.")
 
-# Views badge (auto-increments when the page loads; no keys needed)
+# High-contrast usage badge (global page views)
+# If you fork or your app URL changes, replace the url= param below.
 st.markdown(
     """
-    <div style="margin:8px 0 18px 0; text-align:center;">
-      <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmemo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app&title=Runs&count_bg=%232196F3&title_bg=%23000000&icon=googleanalytics.svg&edge_flat=false"
-           height="32" alt="App runs" />
+    <div style="margin:10px 0 6px 0; text-align:center;">
+      <img
+        src="https://hits.seeyoufarm.com/api/count/incr/badge.svg
+?url=https%3A%2F%2Fmemo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app
+&title=App%20runs
+&count_bg=%2300E676
+&title_bg=%23263238
+&icon=activitypub.svg
+&icon_color=%23FFFFFF
+&title_color=%23FFFFFF
+&edge_flat=false".replace("\\n", "")
+        height="38"
+        alt="App runs (global views)" />
     </div>
     """,
     unsafe_allow_html=True,
@@ -146,12 +176,13 @@ with col2:
 run = st.button("Run")
 
 if run:
-    # Validate date
+    # Parse date
     try:
         event_date = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
         st.error("Please enter the date as YYYY-MM-DD.")
     else:
+        # Compute + render
         try:
             m = snapshot_metrics(ticker, event_date)
         except Exception as e:
