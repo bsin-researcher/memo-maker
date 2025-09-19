@@ -3,7 +3,7 @@
 _Open-source student equity-research toolkit (educational only)._
 
 **▶ Open the App:** [Open in Streamlit](https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/)  
-**Demo (90s):** [Quickstart in README](https://github.com/bsin-researcher/memo-maker?tab=readme-ov-file#quickstart)  
+**Demo (90s):** [Quickstart in README](https://youtu.be/gg6DWU_RMss)  
 **Latest memo:** [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
 
 ---
