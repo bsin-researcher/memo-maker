@@ -8,23 +8,25 @@ from pandas.tseries.offsets import BDay
 import streamlit as st
 
 # --- Global run counter (CountAPI) ---
-import requests  # add this import
+import requests
+import streamlit as st
 
-COUNT_KEY = "bsin-researcher/memo-maker/app_runs"  # you can change to any URL-safe string
+COUNT_NAMESPACE = "bsin-memo"   # any URL-safe string
+COUNT_KEY       = "app_runs_v1" # any URL-safe string
 
 def _countapi_base() -> str:
     return "https://api.countapi.xyz"
 
 def get_run_count() -> int:
     try:
-        r = requests.get(f"{_countapi_base()}/get/{COUNT_KEY}", timeout=3)
+        r = requests.get(f"{_countapi_base()}/get/{COUNT_NAMESPACE}/{COUNT_KEY}", timeout=3)
         return int(r.json().get("value", 0))
     except Exception:
         return 0
 
 def increment_run_count() -> int | None:
     try:
-        r = requests.get(f"{_countapi_base()}/hit/{COUNT_KEY}", timeout=3)
+        r = requests.get(f"{_countapi_base()}/hit/{COUNT_NAMESPACE}/{COUNT_KEY}", timeout=3)
         return int(r.json().get("value"))
     except Exception:
         return None
