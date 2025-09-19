@@ -35,12 +35,7 @@ _(Update these numbers weekly — they’re for admissions “at-a-glance.”)_
 These examples use event dates ≥3 trading days old so T+ rows are filled.
 - [HD — 2025-09-16](./memos/HD_2025-09-16.md)
 - [CRWD — 2025-09-16](./memos/CRWD_2025-09-16.md)
-<!-- Add more as you publish:
-- [AAPL — 2025-08-01](./memos/AAPL_2025-08-01.md)
-- [MSFT — 2025-07-24](./memos/MSFT_2025-07-24.md)
-- [NVDA — 2025-08-29](./memos/NVDA_2025-08-29.md)
-- [AMZN — 2025-08-01](./memos/AMZN_2025-08-01.md)
--->
+
 
 ---
 
