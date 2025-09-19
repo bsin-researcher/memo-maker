@@ -155,6 +155,8 @@ def fmt_pct(x: float | None) -> str:
 # -------- UI --------
 st.title("Memo Maker — Snapshot & T-1..T+3 Event Study")
 st.caption("Educational only; not investment advice.")
+st.caption(f"Global runs recorded: **{get_run_count()}**")
+
 
 col1, col2 = st.columns(2)
 with col1:
