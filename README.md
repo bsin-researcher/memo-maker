@@ -2,6 +2,20 @@
 
 Open-source student equity-research toolkit (educational only).
 
+[![Release](https://img.shields.io/github/v/release/bsin-researcher/memo-maker?sort=semver)](https://github.com/bsin-researcher/memo-maker/releases)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bsin-researcher.github.io/memo-maker/app)
+
+**Links:**  
+- **Live App:** https://bsin-researcher.github.io/memo-maker/app  
+- **Docs site:** https://bsin-researcher.github.io/memo-maker/  
+- **Releases:** https://github.com/bsin-researcher/memo-maker/releases  
+- **Submit a memo (web form):** https://github.com/bsin-researcher/memo-maker/issues/new/choose
+
+**Project metrics (update weekly):**  
+- Memos published: **8**  
+- Latest release: **v0.3.0**  
+- CI: **Passing**  
+
 ### Join the Memo Challenge
 No installs needed. Copy `memos/_TEMPLATE.md`, create `memos/TICKER_YYYY-MM-DD.md`, and open a PR — or submit via **Issues → Memo submission**.
 
