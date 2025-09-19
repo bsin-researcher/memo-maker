@@ -2,4 +2,5 @@ yfinance
 pandas
 numpy
 streamlit
+requests==2.32.3
 
