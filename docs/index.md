@@ -12,6 +12,7 @@ _Open-source student equity-research toolkit (educational only)._
 _Examples use event dates ≥3 trading days ago so T+ rows are filled._
 - [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
 - [CRWD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CRWD_2025-09-16.md)
+- [CAT — 2025-09-15](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CAT_2025-09-15.md)
 
 ---
 
