@@ -19,6 +19,7 @@ _Examples use event dates ≥3 trading days ago so T+ rows are filled._
 
 
 
+
 ---
 
 ## What this does
