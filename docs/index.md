@@ -2,32 +2,30 @@
 
 _Open-source student equity-research toolkit (educational only)._
 
-**▶ Open the App ·** [Open in Streamlit](https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/)  
-**· Demo (90s):** [Quickstart in README](https://github.com/bsin-researcher/memo-maker?tab=readme-ov-file#quickstart)  
-**· Latest memo:** [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
+**▶ Open the App:** [Open in Streamlit](https://memo-maker-dgz58pjc3m8frnappj7dlmb.streamlit.app/)  
+**Demo (90s):** [Quickstart in README](https://github.com/bsin-researcher/memo-maker?tab=readme-ov-file#quickstart)  
+**Latest memo:** [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
 
 ---
 
-## Quick links
-- **All memos:** <https://github.com/bsin-researcher/memo-maker/tree/main/memos>  
-- **Method:** [METHOD.md](https://bsin-researcher.github.io/memo-maker/METHOD.html)  
-- **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)  
-- **Memo Challenge:** [how to contribute](https://bsin-researcher.github.io/memo-maker/challenge.html)  
-- **Submit a memo (form):** <https://github.com/bsin-researcher/memo-maker/issues/new?template=memo-submission.yml>
+## Memo Gallery
+_Examples use event dates ≥3 trading days ago so T+ rows are filled._
+- [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)
+- [CRWD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CRWD_2025-09-16.md)
+
+---
+
+## What this does
+- **Snapshot**: price, 3M & 12M momentum, 52-week drawdown.  
+- **Event study**: compare **T-1..T+3** performance vs **SPY**, show abnormal returns.  
+- **Export & publish**: CSV download + copy-to-memo template for reproducible analysis.
 
 > Educational only; not investment advice.
 
 ---
 
-## What this does
-1. **Generate a Snapshot** — price, 3M/12M momentum, 52-week drawdown.  
-2. **Run an event study** — **T-1..T+3** vs **SPY** with abnormal returns.  
-3. **Export & publish** — CSV download + copy-to-memo template for reproducible analysis.
-
----
-
 ## Project metrics
-_(Update these weekly so admissions can see impact at a glance.)_
+_(Update weekly so impact is visible at a glance.)_
 - **Memos published:** 8  
 - **Latest release:** v0.3.0 → <https://github.com/bsin-researcher/memo-maker/releases>  
 - **CI:** Passing → <https://github.com/bsin-researcher/memo-maker/actions>  
@@ -35,10 +33,19 @@ _(Update these weekly so admissions can see impact at a glance.)_
 
 ---
 
-## Memo Gallery
-_Examples use event dates ≥3 trading days ago so T+ rows are filled._
-- [HD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/HD_2025-09-16.md)  
-- [CRWD — 2025-09-16](https://github.com/bsin-researcher/memo-maker/blob/main/memos/CRWD_2025-09-16.md)
+## Memo Challenge (contribute)
+Two ways to submit a 1-page equity memo (no installs needed):
+- **Web-only PR**: open the [template](https://github.com/bsin-researcher/memo-maker/blob/main/memos/_TEMPLATE.md) → copy → create your memo file → “Propose changes” → **Create PR**.  
+- **Issue form**: use **Submit a memo** → paste your memo; we’ll convert it.  
+  - Form: <https://github.com/bsin-researcher/memo-maker/issues/new?template=memo-submission.yml>  
+  - Guide: <https://bsin-researcher.github.io/memo-maker/challenge.html>
+
+---
+
+### Quick links
+- **All memos:** <https://github.com/bsin-researcher/memo-maker/tree/main/memos>  
+- **Method:** [METHOD.md](https://bsin-researcher.github.io/memo-maker/METHOD.html)  
+- **Performance:** [performance report](https://github.com/bsin-researcher/memo-maker/blob/main/studies/performance.md)
 
 ---
 
