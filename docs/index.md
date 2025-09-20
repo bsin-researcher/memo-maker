@@ -42,7 +42,7 @@ _(Update weekly so impact is visible at a glance.)_
 
 ## Memo Challenge (contribute)
 Two ways to submit a 1-page equity memo (no installs needed):
-- **Web-only PR**: open the [template]([Memo template](https://github.com/bsin-researcher/memo-maker/blob/main/memos/_TEMPLATE.md)
+- **Web-only PR**: open the [template]([Memo template](https://github.com/bsin-researcher/memo-maker/blob/423340503167a184c802fb7b651ce6a918eb4c27/docs/docs/memo_template.md)
  → copy → create your memo file → “Propose changes” → **Create PR**.  
 - **Issue form**: use **Submit a memo** → paste your memo; we’ll convert it.  
   - Form: <https://github.com/bsin-researcher/memo-maker/issues/new?template=memo-submission.yml>  
